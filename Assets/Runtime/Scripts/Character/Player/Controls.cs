@@ -237,11 +237,11 @@ namespace UTG.Character
                 },
                 {
                     ""name"": ""Click"",
-                    ""type"": ""PassThrough"",
+                    ""type"": ""Button"",
                     ""id"": ""e2e7cb0c-1fec-4f60-a24b-ac1b76d37692"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """"
+                    ""interactions"": ""Tap,SlowTap""
                 },
                 {
                     ""name"": ""ScrollWheel"",

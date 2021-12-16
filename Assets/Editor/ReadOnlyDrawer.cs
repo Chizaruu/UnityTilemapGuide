@@ -28,10 +28,43 @@ public class ReadOnlyDrawer : PropertyDrawer
                 break;
             case SerializedPropertyType.ObjectReference:
                 try {
-                        valueStr = prop.objectReferenceValue.ToString ();
+                        valueStr = prop.objectReferenceValue.ToString();      
                     } catch (NullReferenceException) {
                         valueStr = "None (Game Object)";
                     }
+                break;
+            case SerializedPropertyType.Vector3:
+                valueStr = prop.vector3Value.ToString();
+                break;
+            case SerializedPropertyType.Vector3Int:
+                valueStr = prop.vector3IntValue.ToString();
+                break;
+            case SerializedPropertyType.Vector2:
+                valueStr = prop.vector2Value.ToString();
+                break;
+            case SerializedPropertyType.Vector2Int:
+                valueStr = prop.vector2IntValue.ToString();
+                break;
+            case SerializedPropertyType.Rect:
+                valueStr = prop.rectValue.ToString();
+                break;
+            case SerializedPropertyType.RectInt:
+                valueStr = prop.rectIntValue.ToString();
+                break;
+            case SerializedPropertyType.Bounds:
+                valueStr = prop.boundsValue.ToString();
+                break;
+            case SerializedPropertyType.BoundsInt:  
+                valueStr = prop.boundsIntValue.ToString();
+                break;
+            case SerializedPropertyType.AnimationCurve:
+                valueStr = prop.animationCurveValue.ToString();
+                break;
+            case SerializedPropertyType.ExposedReference:
+                valueStr = prop.exposedReferenceValue.ToString();
+                break;
+            case SerializedPropertyType.Generic:
+                valueStr = prop.stringValue;
                 break;
             default:
                 valueStr = "(not supported)";

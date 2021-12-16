@@ -146,6 +146,7 @@ GameObject:
   - component: {fileID: 1365170034572894103}
   - component: {fileID: 1365170034572894100}
   - component: {fileID: 1365170034572894101}
+  - component: {fileID: -881436547129325274}
   m_Layer: 5
   m_Name: TileButton
   m_TagString: Untagged
@@ -267,3 +268,17 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
+--- !u!114 &-881436547129325274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1365170034572894099}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 614f92b1b0b7a4b42a5a93f6759359a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tileBaseType: 0
+  tileBase: {fileID: 0}
