@@ -18,3 +18,9 @@ This allows you to make create/modify Tilemaps as you wish and not worry about h
 This uses the ShadowCast algorithm provided by Adam Milazzo (http://www.adammil.net/blog/v125_Roguelike_Vision_Algorithms.html#shadowcode)
 
 Open FieldOfViewDemo in Unity Editor to test.
+
+## Level Editor
+
+This allows you to paint/erase tiles on Tilemaps during runtime.
+
+Open LevelEditorDemo in Unity Editor to test.
