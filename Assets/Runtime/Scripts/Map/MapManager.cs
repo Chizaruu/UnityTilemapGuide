@@ -18,10 +18,8 @@ namespace UTG.Map
         public Tilemap obstacleMap; // The obstacle map of the map.
         public Tilemap fogMap; // The fog map of the map.
 
-        [Header("Preview & Erasure Tilemaps")]
-        public Tilemap floorPreviewMap; // The preview floor map of the map.
-        public Tilemap obstaclePreviewMap; // The preview obstacle map of the map.
-        public Tilemap erasurePreviewMap; // The preview erasure map of the map.
+        [Header("Preview Tilemap")]
+        public Tilemap previewMap; // The preview map of the map.
 
         [Header("Dictionaries")]
         public Dictionary<Vector3, WorldTile> floorTiles = new Dictionary<Vector3, WorldTile>(); // The floor tiles of the map.

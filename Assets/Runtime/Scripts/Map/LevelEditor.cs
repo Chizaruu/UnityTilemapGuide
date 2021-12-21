@@ -45,7 +45,7 @@ namespace UTG.Map
 
         [Header("Current Tilemap & Preview Tilemap")]
         [SerializeField, ReadOnly]private Tilemap tilemap; // The current tilemap.
-        [SerializeField, ReadOnly]private Tilemap previewTilemap; // The preview tilemap.
+        [SerializeField]private List<Tilemap> tilemaps = new List<Tilemap>(); // The list of tilemaps.
 
         [Header("Context Related Variables")]
         [SerializeField, ReadOnly]private bool holdActive; // Is the context menu active?
@@ -62,8 +62,6 @@ namespace UTG.Map
         public void SetBrushType (int value) => brushType = (BrushType)value; // Sets the brush type.
 
         public void SetIsEraser(bool value) => isEraser = value; // Sets the is eraser value.
-
-        [SerializeField]private List<Tilemap> tilemaps = new List<Tilemap>(); // The list of tilemaps.
 
         private void Awake() {
             controls = new Controls(); // Creates the controls.
@@ -95,12 +93,14 @@ namespace UTG.Map
             GetTilesFromResources("Floor", floorTilesParent); // Get all floor tiles from resources
             GetTilesFromResources("Obstacle", obstacleTilesParent); // Get all obstacle tiles from resources
 
-            List<Tilemap> maps = FindObjectsOfType<Tilemap>().ToList(); // Gets all tilemaps.
+            // Get all tilemaps from the level editor.
+            foreach (Tilemap tilemap in FindObjectsOfType<Tilemap>().ToList()) {
+                if (tilemap.name != MapManager.instance.previewMap.name) {
+                    tilemaps.Add(tilemap);
+                }
+            }
 
-            maps.ForEach(map => { // For each tilemap.
-                tilemap = map; // Set the tilemap.
-            });
-
+            //The sorting of tilemaps is important, the tilemaps should be in the same order as the tilemaps in the editor.
             tilemaps.Sort((a, b) => {
                 TilemapRenderer aRenderer = a.GetComponent<TilemapRenderer>(); // Gets the tilemap renderer of the tilemap.
                 TilemapRenderer bRenderer = b.GetComponent<TilemapRenderer>(); // Gets the tilemap renderer of the tilemap.
@@ -133,9 +133,9 @@ namespace UTG.Map
         /// <summary> Updates the preview tilemap with a single tile. </summary>
         private void UpdateSingleTilePreview() {
             // Remove old tile if existing
-            previewTilemap.SetTile(lastGridPosition, null);
+            MapManager.instance.previewMap.SetTile(lastGridPosition, null);
             // Set current tile to current mouse positions tile
-            previewTilemap.SetTile(currentGridPosition, tileBase);
+            MapManager.instance.previewMap.SetTile(currentGridPosition, tileBase);
         }
 
         /// <summary> Gets mouse position. </summary>
@@ -176,7 +176,7 @@ namespace UTG.Map
                 case BrushType.Line:
                 case BrushType.Rectangle:
                     DrawBounds(tilemap, isEraser); // Draws the bounds on the tilemap.
-                    previewTilemap.ClearAllTiles();
+                    MapManager.instance.previewMap.ClearAllTiles();
                     break;
                 case BrushType.Single:
                 default:
@@ -187,19 +187,19 @@ namespace UTG.Map
 
         /// <summary> Draws a rectangle based on the start and end positions. </summary>
         private void RectangleRenderer() {
-            previewTilemap.ClearAllTiles();
+            MapManager.instance.previewMap.ClearAllTiles();
 
             bounds.xMin = currentGridPosition.x < holdStartPosition.x ? currentGridPosition.x : holdStartPosition.x;
             bounds.xMax = currentGridPosition.x > holdStartPosition.x ? currentGridPosition.x : holdStartPosition.x;
             bounds.yMin = currentGridPosition.y < holdStartPosition.y ? currentGridPosition.y : holdStartPosition.y;
             bounds.yMax = currentGridPosition.y > holdStartPosition.y ? currentGridPosition.y : holdStartPosition.y;
 
-            DrawBounds(previewTilemap, false); // Draw the bounds on the preview tilemap.
+            DrawBounds(MapManager.instance.previewMap, false); // Draw the bounds on the preview tilemap.
         }
 
         /// <summary> Draws a line based on the start and end positions. </summary>
         private void LineRenderer() {
-            previewTilemap.ClearAllTiles();
+            MapManager.instance.previewMap.ClearAllTiles();
 
             float diffX = Mathf.Abs(currentGridPosition.x - holdStartPosition.x);
             float diffY = Mathf.Abs(currentGridPosition.y - holdStartPosition.y);
@@ -218,7 +218,7 @@ namespace UTG.Map
                 bounds.yMax = currentGridPosition.y > holdStartPosition.y ? currentGridPosition.y : holdStartPosition.y;
             }
 
-            DrawBounds(previewTilemap, false); // Draw the bounds on the preview tilemap.
+            DrawBounds(MapManager.instance.previewMap, false); // Draw the bounds on the preview tilemap.
         }
         
         private void DrawBounds(Tilemap map, bool canErase) {
@@ -247,29 +247,31 @@ namespace UTG.Map
 
         public void SetTilemapAndTileBase(){
             //Remove preview tile if existing
-            if(previewTilemap != null) {
-                previewTilemap.SetTile(currentGridPosition, null);
+            if(MapManager.instance.previewMap != null) {
+                MapManager.instance.previewMap.SetTile(currentGridPosition, null);
             }
 
             if(isEraser) {
                 tileBase = eraserTile;
                 tilemap = null;
-                previewTilemap = MapManager.instance.erasurePreviewMap;
+                
+                MapManager.instance.previewMap.gameObject.GetComponent<TilemapRenderer>().sortingOrder = 99; //Set to the highest sorting layer
             }
-            else{
+            else if(selectedButtonTile != null) {
                 //Set the tilemap and tilebase based on the selected button
                 if(selectedButtonTile.GetComponent<TileBaseHolder>() != null){
                     tileBase = selectedButtonTile.GetComponent<TileBaseHolder>().tileBase;
                     switch(selectedButtonTile.GetComponent<TileBaseHolder>().tileBaseType){
                         case TileBaseHolder.TileBaseType.Floor:
                             tilemap = MapManager.instance.floorMap;
-                            previewTilemap = MapManager.instance.floorPreviewMap;
                             break;
                         case TileBaseHolder.TileBaseType.Obstacle:
                             tilemap = MapManager.instance.obstacleMap;
-                            previewTilemap = MapManager.instance.obstaclePreviewMap;
                             break;
                     }
+
+                    //Set the preview map to the same sorting layer as the tilemap
+                    MapManager.instance.previewMap.gameObject.GetComponent<TilemapRenderer>().sortingOrder = tilemap.gameObject.GetComponent<TilemapRenderer>().sortingOrder;
                 } else {
                     Debug.LogError("TileBaseHolder component not found on selected tile");
                 } 
