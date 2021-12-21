@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -8,6 +10,7 @@ using UTG.Character;
 
 namespace UTG.Map
 {
+    //Adapted from Velvarys's Tilemap Editing Tutorial (https://www.youtube.com/playlist?list=PLJBcv4t1EiSz-wA35-dWpcI98pNiyK6an)
     public class LevelEditor : MonoBehaviour
     {
         public enum BrushType{
@@ -52,13 +55,15 @@ namespace UTG.Map
         private Vector2 mousePos; // The mouse position.
         private Controls controls; // The controls of the level editor.
 
-        private BoundsInt bounds; // The bounds of the tilemap.
+        private BoundsInt bounds; 
 
         private bool isPointerOverGameObject; // Is the mouse over a gameobject?
 
         public void SetBrushType (int value) => brushType = (BrushType)value; // Sets the brush type.
 
         public void SetIsEraser(bool value) => isEraser = value; // Sets the is eraser value.
+
+        [SerializeField]private List<Tilemap> tilemaps = new List<Tilemap>(); // The list of tilemaps.
 
         private void Awake() {
             controls = new Controls(); // Creates the controls.
@@ -89,10 +94,22 @@ namespace UTG.Map
         private void Start() {
             GetTilesFromResources("Floor", floorTilesParent); // Get all floor tiles from resources
             GetTilesFromResources("Obstacle", obstacleTilesParent); // Get all obstacle tiles from resources
+
+            List<Tilemap> maps = FindObjectsOfType<Tilemap>().ToList(); // Gets all tilemaps.
+
+            maps.ForEach(map => { // For each tilemap.
+                tilemap = map; // Set the tilemap.
+            });
+
+            tilemaps.Sort((a, b) => {
+                TilemapRenderer aRenderer = a.GetComponent<TilemapRenderer>(); // Gets the tilemap renderer of the tilemap.
+                TilemapRenderer bRenderer = b.GetComponent<TilemapRenderer>(); // Gets the tilemap renderer of the tilemap.
+
+                return bRenderer.sortingOrder.CompareTo(aRenderer.sortingOrder); // Compare the sorting orders.
+            });
         }
 
         private void Update () {
-
             isPointerOverGameObject = eventSystem.IsPointerOverGameObject(); // Is the mouse over a gameobject?
 
             // if something is selected - show preview
@@ -104,7 +121,7 @@ namespace UTG.Map
                     lastGridPosition = currentGridPosition; // Sets the last grid position.
                     currentGridPosition = gridPos; // Sets the current grid position.
                 
-                    UpdatePreview(); 
+                    UpdateSingleTilePreview(); 
 
                     if (holdActive) {
                         HandleDrawing();
@@ -113,8 +130,8 @@ namespace UTG.Map
             }
         }
 
-        /// <summary> Updates the preview tilemap. </summary>
-        private void UpdatePreview() {
+        /// <summary> Updates the preview tilemap with a single tile. </summary>
+        private void UpdateSingleTilePreview() {
             // Remove old tile if existing
             previewTilemap.SetTile(lastGridPosition, null);
             // Set current tile to current mouse positions tile
@@ -128,11 +145,7 @@ namespace UTG.Map
 
         /// <summary> Gets the left click start event. </summary>
         private void OnLeftClick(InputAction.CallbackContext ctx) {
-            if (isPointerOverGameObject) return; // If the mouse is over a gameobject, return.
-
-
-            if (selectedButtonTile != null|| isEraser) {
-
+            if (selectedButtonTile != null && !isPointerOverGameObject) {
                 if (ctx.phase == InputActionPhase.Started) {
                     holdActive = true; 
 
@@ -148,31 +161,27 @@ namespace UTG.Map
         }
 
         private void HandleDrawing() {
-            if (selectedButtonTile != null) {
-                switch (brushType) {
-                    case BrushType.Single:
-                    default:
-                        DrawOrEraseTile(tilemap, currentGridPosition, isEraser);
-                        break;
-                    case BrushType.Line:
-                        LineRenderer();
-                        break;
-                    case BrushType.Rectangle:
-                        RectangleRenderer();
-                        break;
-                }
+            switch (brushType) {
+                case BrushType.Line:
+                    LineRenderer();
+                    break;
+                case BrushType.Rectangle:
+                    RectangleRenderer();
+                    break;
             }
         }
 
         private void HandleDrawRelease() {
-            if (selectedButtonTile != null) {
-                switch (brushType) {
-                    case BrushType.Line:
-                    case BrushType.Rectangle:
-                        DrawBounds(tilemap, isEraser); // Draws the bounds on the tilemap.
-                        previewTilemap.ClearAllTiles();
-                        break;
-                }
+            switch (brushType) {
+                case BrushType.Line:
+                case BrushType.Rectangle:
+                    DrawBounds(tilemap, isEraser); // Draws the bounds on the tilemap.
+                    previewTilemap.ClearAllTiles();
+                    break;
+                case BrushType.Single:
+                default:
+                    DrawOrEraseTile(tilemap, currentGridPosition, isEraser);
+                    break;
             }
         }
 
@@ -222,29 +231,32 @@ namespace UTG.Map
         }
 
         private void DrawOrEraseTile(Tilemap map, Vector3Int gridpos, bool canErase) {
-            if(canErase) {       
-                if(MapManager.instance.obstacleMap.HasTile(gridpos)) {
-                    MapManager.instance.obstacleMap.SetTile(gridpos, null); 
-                } else if(MapManager.instance.floorMap.HasTile(gridpos)) {
-                    MapManager.instance.floorMap.SetTile(gridpos, null); 
-                }
+            if(canErase) {   
+                tilemaps.Any(map => {
+                    if(map.HasTile(gridpos)) {
+                        map.SetTile(gridpos, null);
+                        return true;
+                    }
+
+                    return false;
+                });  
             } else {
                 map.SetTile(gridpos, tileBase); // Draws the tile on the map.
             }
         }
 
         public void SetTilemapAndTileBase(){
-            //Remove UpdatePreview tile if existing
+            //Remove preview tile if existing
             if(previewTilemap != null) {
-                previewTilemap.SetTile(currentGridPosition, null); 
+                previewTilemap.SetTile(currentGridPosition, null);
             }
-            
+
             if(isEraser) {
                 tileBase = eraserTile;
                 tilemap = null;
                 previewTilemap = MapManager.instance.erasurePreviewMap;
             }
-            else if(selectedButtonTile != null){
+            else{
                 //Set the tilemap and tilebase based on the selected button
                 if(selectedButtonTile.GetComponent<TileBaseHolder>() != null){
                     tileBase = selectedButtonTile.GetComponent<TileBaseHolder>().tileBase;
@@ -261,10 +273,6 @@ namespace UTG.Map
                 } else {
                     Debug.LogError("TileBaseHolder component not found on selected tile");
                 } 
-            } else {
-                tileBase = null;
-                tilemap = null;
-                previewTilemap = null;
             }
         }
 
