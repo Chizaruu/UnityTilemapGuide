@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Interactions;
 using UTG.Map;
 
 namespace UTG.Character
@@ -8,22 +9,48 @@ namespace UTG.Character
     /// <summary> Player Movement. </summary>
     public class PlayerMovement : MonoBehaviour
     {
-        private Vector3 futurevec; //future position
-
         private Controls controls; //input controls
 
         [SerializeField]private FOV fov;
+
+        private bool holdActive;
+
+        [SerializeField, ReadOnly]private Vector3 vec;
 
         /// <summary> Initialize controls. </summary>
         private void Awake() => controls = new Controls();
 
         /// <summary> Start listening to input. </summary>
-        private void OnEnable() => controls.Enable();
+        private void OnEnable(){
+            controls.Enable();
+
+            /*
+            controls.Player.Movement.started += OnMovement;
+            controls.Player.Movement.performed += OnMovement;
+            controls.Player.Movement.canceled += OnMovement;
+            */
+        }
 
         /// <summary> Stop listening to input. </summary>
-        private void OnDisable() => controls.Disable();
+        private void OnDisable(){
+            controls.Disable();
 
-        #if UNITY_STANDALONE 
+            /*
+            controls.Player.Movement.started -= OnMovement;
+            controls.Player.Movement.performed -= OnMovement;
+            controls.Player.Movement.canceled -= OnMovement;
+            */
+        }
+
+        /*
+        private void Update() {
+            if(holdActive)
+            {
+                MovePlayer();
+            }
+        }
+        */
+        
         /// <summary> Update player movement. </summary>
         private void FixedUpdate()
         {
@@ -46,45 +73,55 @@ namespace UTG.Character
             if(up || down || right || left)
             {
                 //Invoke because we want to give some time to read values if we want diagonal movement.
-                Invoke("Move", 0.1f);
+                Invoke("MovePlayer", 0.1f);
             }
         }
-        #endif
-
-        /// <summary> Move player using normal input. </summary>
-        private void Move()
+        
+        /*
+        private void OnMovement(InputAction.CallbackContext ctx)
         {
-            Vector3 vec = (Vector3)controls.Player.Movement.ReadValue<Vector2>(); //read movement vector
-            vec = new Vector3(Mathf.Round(vec.x), Mathf.Round(vec.y), Mathf.Round(vec.z)); //round vector to prevent bad movement
-            
-            futurevec = transform.position + vec;//future position
-            if(GameManager.instance.IsPlaying) return; //don't move if game is paused
-
-            if (!CanMove(vec)) return; //don't move if player can't move
-
-            if(futurevec == transform.position) return; //don't move if next position is same as current position
-
-            StartCoroutine(MoveTo(futurevec));
+            if(ctx.performed)
+            {
+                holdActive = true;
+            }
+            else if(ctx.interaction is SlowTapInteraction || ctx.interaction is TapInteraction)
+            {
+                holdActive = false;
+                MovePlayer();
+            }
         }
+        */
 
-        /// <summary> Check if player can move. </summary>
-        private bool CanMove(Vector3 vec)
+        /// <summary> Move player </summary>
+        private void MovePlayer()
         {
-            Vector3Int gridPosition = MapManager.instance.floorMap.WorldToCell(transform.position + vec); //grid position of player
-            if (!MapManager.instance.floorMap.HasTile(gridPosition) || MapManager.instance.obstacleMap.HasTile(gridPosition))
-                return false; //if player can't move, return false
-            return true;//if player can move, return true
-        }
+            vec = (Vector3)controls.Player.Movement.ReadValue<Vector2>();
+            //Round the vector to the nearest integer.
+            vec = new Vector3(Mathf.Round(vec.x), Mathf.Round(vec.y), 0);
 
-        /// <summary> Move player to future position. </summary>
-        private IEnumerator MoveTo(Vector3 end)
-        {
-            yield return null;
-            transform.position = end;
+            //Get the future position of the player.
+            Vector3 futureVec = transform.position + vec;
+
+            //Check if the game is playing, if it is, return.
+            if(GameManager.instance.IsPlaying) return;
+
+            //Check if the future position is valid.
+            if(!IsValidPosition(futureVec)) return;
+
+            //Move the player.
+            transform.position = futureVec;
             fov.RefreshFieldOfView();
             GameManager.instance.TurnChange();
         }
-        
+
+        /// <summary> Check if player can move. </summary>
+        private bool IsValidPosition(Vector3 futureVec)
+        {
+            Vector3Int gridPosition = MapManager.instance.floorMap.WorldToCell(futureVec); //grid position of player
+            if (!MapManager.instance.floorMap.HasTile(gridPosition) || MapManager.instance.obstacleMap.HasTile(gridPosition) || futureVec == transform.position)
+                return false; //if player can't move, return false
+            return true;//if player can move, return true
+        } 
     } 
 }
 

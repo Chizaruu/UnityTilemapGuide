@@ -155,6 +155,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_MoveRepeatDelay: 0.5
   m_MoveRepeatRate: 0.1
+  m_XRTrackingOrigin: {fileID: 0}
   m_ActionsAsset: {fileID: -944628639613478452, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
   m_PointAction: {fileID: 1054132383583890850, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
   m_MoveAction: {fileID: 3710738434707379630, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
@@ -1140,7 +1141,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: Demo
+          m_StringArgument: SerializationDemo
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1008986024
@@ -1486,6 +1487,7 @@ MonoBehaviour:
   floorMap: {fileID: 174881676}
   obstacleMap: {fileID: 1526722639}
   fogMap: {fileID: 0}
+  previewMap: {fileID: 0}
 --- !u!1 &1554483108
 GameObject:
   m_ObjectHideFlags: 0

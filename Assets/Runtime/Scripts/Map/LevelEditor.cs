@@ -146,14 +146,14 @@ namespace UTG.Map
         /// <summary> Gets the left click start event. </summary>
         private void OnLeftClick(InputAction.CallbackContext ctx) {
             if (selectedButtonTile != null && !isPointerOverGameObject) {
-                if (ctx.phase == InputActionPhase.Started) {
+                if (ctx.started) {
                     holdActive = true; 
 
                     if (ctx.interaction is TapInteraction) { 
                         holdStartPosition = currentGridPosition;
                     }
                     HandleDrawing(); 
-                } else if (ctx.interaction is SlowTapInteraction || ctx.interaction is TapInteraction && ctx.phase == InputActionPhase.Performed) {
+                } else if (ctx.interaction is SlowTapInteraction || ctx.interaction is TapInteraction && ctx.performed) {
                     holdActive = false;
                     HandleDrawRelease(); 
                 }

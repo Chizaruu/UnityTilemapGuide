@@ -28,12 +28,12 @@ public class SaveManager : MonoBehaviour
     {
         string path = Path.Combine(Application.persistentDataPath, "Saves"); //path = C:\Users\User\AppData\LocalLow\HumbleRPG\Saves
 
+        path = Path.Combine(path, sceneName); //path = C:\Users\User\AppData\LocalLow\HumbleRPG\Saves\SceneName
+
         if(!Directory.Exists(path)){
             Debug.Log("Directory does not exist: " + path);
             return;
         }
-
-        path = Path.Combine(path, sceneName); //path = C:\Users\User\AppData\LocalLow\HumbleRPG\Saves\SceneName
 
         //Initialize the mapPath
         path = Path.Combine(path, "Maps"); //path = C:\Users\User\AppData\LocalLow\HumbleRPG\Saves\SceneName\Maps
@@ -59,7 +59,7 @@ public class SaveManager : MonoBehaviour
         }   
     }
 
-    /// <summary> Delete the scene. </summary>
+    /// <summary> Delete the scene using given Scene name.</summary>
     public void DeleteScene(string sceneName)
     {
         string path = Path.Combine(Application.persistentDataPath, "Saves"); //path = C:\Users\User\AppData\LocalLow\HumbleRPG\Saves
