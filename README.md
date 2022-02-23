@@ -40,7 +40,7 @@ It's time to learn the ABCs of the Unity Tilemap package.
 
 Recommended things to do before you continue:
 - It's recommended that you create a "Sprites" Folder within your Assets folder.
-- When importing it Sprites/Tilesets, it's a good idea to follow the standard 8x8, 16x16, 32x32, Etc texture sizes (Makes life a lot easier)
+- When importing Sprites/Tilesets, it's a good idea to follow the standard 8x8, 16x16, 32x32, Etc texture sizes (Makes life a lot easier)
 #### Setting up your Tile Sprites
 Before we start to use the Tilemap Palette, we need to make sure that we have our sprites imported and set up for tile creation.
 
